@@ -302,7 +302,15 @@ if (backgroundAudio && audioToggle) {
         document.addEventListener(eventName, playBackgroundAudio, { once: true, passive: true });
     });
 
-    playBackgroundAudio();
+    const startAudioAfterLoad = () => {
+        window.setTimeout(playBackgroundAudio, 1200);
+    };
+
+    if (document.readyState === 'complete') {
+        startAudioAfterLoad();
+    } else {
+        window.addEventListener('load', startAudioAfterLoad, { once: true });
+    }
 }
 
 document.querySelectorAll('[data-rating-picker]').forEach((picker) => {

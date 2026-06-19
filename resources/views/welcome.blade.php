@@ -178,6 +178,7 @@
 
             @php
                 $videoPoster = $portfolioPhotos->first()?->image_url ?? asset('images/portfolio/beni-profile-camera.jpeg');
+                $showcaseMedia = $portfolioPhotos->take(6);
                 $videoMimeType = fn (string $url) => match (strtolower(pathinfo(parse_url($url, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION))) {
                     'webm' => 'video/webm',
                     'mov' => 'video/quicktime',
@@ -185,18 +186,12 @@
                 };
             @endphp
 
-            @if ($portfolioMedia->isNotEmpty())
-                <div class="portfolio-showcase reveal" style="--portfolio-slide-duration: {{ max($portfolioMedia->count(), 3) * 4 }}s;">
+            @if ($showcaseMedia->isNotEmpty())
+                <div class="portfolio-showcase reveal" style="--portfolio-slide-duration: {{ max($showcaseMedia->count(), 3) * 4 }}s;">
                     <div class="portfolio-showcase-stage">
-                        @foreach ($portfolioMedia as $media)
+                        @foreach ($showcaseMedia as $media)
                             <figure class="portfolio-showcase-slide" style="animation-delay: {{ $loop->index * 4 }}s;">
-                                @if ($media->media_type === 'video')
-                                    <video controls playsinline preload="metadata" poster="{{ $videoPoster }}" data-focus-video>
-                                        <source src="{{ $media->image_url }}" type="{{ $videoMimeType($media->image_url) }}">
-                                    </video>
-                                @else
-                                    <img src="{{ $media->image_url }}" alt="{{ $media->title }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}" decoding="async">
-                                @endif
+                                <img src="{{ $media->image_url }}" alt="{{ $media->title }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}" decoding="async">
                                 <figcaption>
                                     <span>{{ $media->title }}</span>
                                     <small>{{ $media->category }}</small>
@@ -205,7 +200,7 @@
                         @endforeach
                     </div>
                     <div class="portfolio-showcase-rail" aria-hidden="true">
-                        @foreach ($portfolioMedia as $media)
+                        @foreach ($showcaseMedia as $media)
                             <span style="animation-delay: {{ $loop->index * 4 }}s;"></span>
                         @endforeach
                     </div>
@@ -217,7 +212,7 @@
                     <div class="portfolio-video-list {{ $portfolioVideos->count() === 1 ? 'portfolio-video-list--single' : '' }} grid gap-5 {{ $portfolioVideos->count() > 1 ? 'md:grid-cols-2 lg:grid-cols-1' : '' }}">
                         @foreach ($portfolioVideos as $video)
                             <figure class="portfolio-video reveal">
-                                <video controls preload="metadata" playsinline poster="{{ $videoPoster }}" data-focus-video>
+                                <video controls preload="none" playsinline poster="{{ $videoPoster }}" data-focus-video>
                                     <source src="{{ $video->image_url }}" type="{{ $videoMimeType($video->image_url) }}">
                                 </video>
                                 <figcaption>
@@ -480,7 +475,7 @@
     </div>
 
     <div class="site-audio" data-audio-widget>
-        <audio src="{{ asset('audio/until-i-found-you-violin-cover.mp3') }}" loop preload="auto" data-background-audio></audio>
+        <audio src="{{ asset('audio/until-i-found-you-violin-cover.mp3') }}" loop preload="none" data-background-audio></audio>
         <button class="site-audio-toggle" type="button" data-audio-toggle aria-pressed="false">
             Nyalakan lagu
         </button>
