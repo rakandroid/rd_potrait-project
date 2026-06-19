@@ -1,4 +1,6 @@
 {
+  "buildCommand": "npm run build && composer run vercel-build",
+  "outputDirectory": "public",
   "functions": {
     "api/index.php": {
       "runtime": "vercel-php@0.7.1"
