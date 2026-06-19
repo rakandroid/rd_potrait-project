@@ -56,7 +56,7 @@ class DatabaseSeeder extends Seeder
         ], [
             'category' => 'Video',
             'media_type' => 'video',
-            'image_path' => 'portfolio/portrait-background-reference.mp4',
+            'image_path' => 'videos/jzjrPp4LqmWRtjA3wKHe1Fd3Kpc2T12drRK0nmVI.mp4',
             'sort_order' => 0,
             'is_visible' => true,
         ]);

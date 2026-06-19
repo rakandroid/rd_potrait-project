@@ -1,2 +1,4 @@
 User-agent: *
 Disallow:
+
+Sitemap: https://rd-potrait.vercel.app/sitemap.xml

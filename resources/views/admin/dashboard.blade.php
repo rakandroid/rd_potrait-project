@@ -103,7 +103,7 @@
                 </div>
                 <div>
                     <label class="admin-label" for="hero-image">Foto Slide</label>
-                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="hero-image" name="image" type="file" accept="image/*" required>
+                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="hero-image" name="image" type="file" accept="image/*" data-max-upload-bytes="3670016" required>
                 </div>
                 <div>
                     <label class="admin-label" for="hero-sort">Urutan</label>
@@ -130,7 +130,7 @@
                             <div class="grid gap-4 sm:grid-cols-[1fr_110px]">
                                 <div>
                                     <label class="admin-label" for="hero-image-{{ $photo->id }}">Ganti Foto</label>
-                                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-3 file:py-2 file:font-bold file:text-[#3b0509]" id="hero-image-{{ $photo->id }}" name="image" type="file" accept="image/*">
+                                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-3 file:py-2 file:font-bold file:text-[#3b0509]" id="hero-image-{{ $photo->id }}" name="image" type="file" accept="image/*" data-max-upload-bytes="3670016">
                                 </div>
                                 <div>
                                     <label class="admin-label" for="hero-sort-{{ $photo->id }}">Urutan</label>
@@ -210,6 +210,95 @@
             </div>
         </section>
 
+        <section class="mb-10 border border-white/10 bg-[#151515] p-6">
+            <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="eyebrow">Karakter</p>
+                    <h1 class="font-display text-3xl font-bold">Kelola Profile Halaman Depan</h1>
+                    <p class="mt-2 max-w-2xl text-sm leading-6 text-[#bdb4b0]">Tambahkan karakter baru selain Beni lengkap dengan foto dan deskripsi singkat.</p>
+                </div>
+                <p class="text-sm font-semibold text-[#bdb4b0]">{{ $profiles->count() }} profile</p>
+            </div>
+
+            <form class="mb-6 grid gap-4 border border-white/10 bg-[#191919] p-5 lg:grid-cols-[1fr_1fr_140px_auto]" method="POST" action="{{ route('admin.portfolio.store') }}" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="placement" value="profile">
+                <div>
+                    <label class="admin-label" for="profile-title">Nama Karakter</label>
+                    <input class="admin-input" id="profile-title" name="title" type="text" value="{{ old('title') }}" placeholder="Nama profile" required>
+                </div>
+                <div>
+                    <label class="admin-label" for="profile-category">Label</label>
+                    <input class="admin-input" id="profile-category" name="category" type="text" value="{{ old('category', 'Profile') }}" placeholder="Profile" required>
+                </div>
+                <div>
+                    <label class="admin-label" for="profile-sort">Urutan</label>
+                    <input class="admin-input" id="profile-sort" name="sort_order" type="number" min="0" value="{{ old('sort_order', 0) }}">
+                </div>
+                <div>
+                    <label class="admin-label" for="profile-image">Foto</label>
+                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="profile-image" name="image" type="file" accept="image/*" data-max-upload-bytes="3670016" required>
+                </div>
+                <div class="lg:col-span-4">
+                    <label class="admin-label" for="profile-description">Deskripsi</label>
+                    <textarea class="admin-input min-h-28" id="profile-description" name="description" required>{{ old('description') }}</textarea>
+                </div>
+                <input type="hidden" name="is_visible" value="1">
+                <button class="bg-[#ffb3b1] px-6 py-4 font-bold text-[#3b0509] transition hover:bg-[#ffd6d3] lg:col-span-4" type="submit">Tambah Profile</button>
+            </form>
+
+            <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                @forelse ($profiles as $profile)
+                    <article class="border border-white/10 bg-[#191919]">
+                        <img class="h-64 w-full object-cover object-top" src="{{ $profile->image_url }}" alt="{{ $profile->title }}">
+                        <form class="space-y-4 p-5" method="POST" action="{{ route('admin.portfolio.update', $profile) }}" enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" name="placement" value="profile">
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label class="admin-label" for="profile-title-{{ $profile->id }}">Nama Karakter</label>
+                                    <input class="admin-input" id="profile-title-{{ $profile->id }}" name="title" type="text" value="{{ old('title', $profile->title) }}" required>
+                                </div>
+                                <div>
+                                    <label class="admin-label" for="profile-category-{{ $profile->id }}">Label</label>
+                                    <input class="admin-input" id="profile-category-{{ $profile->id }}" name="category" type="text" value="{{ old('category', $profile->category) }}" required>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="admin-label" for="profile-description-{{ $profile->id }}">Deskripsi</label>
+                                <textarea class="admin-input min-h-28" id="profile-description-{{ $profile->id }}" name="description" required>{{ old('description', $profile->description) }}</textarea>
+                            </div>
+                            <div class="grid gap-4 sm:grid-cols-[1fr_120px]">
+                                <div>
+                                    <label class="admin-label" for="profile-image-{{ $profile->id }}">Ganti Foto</label>
+                                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-3 file:py-2 file:font-bold file:text-[#3b0509]" id="profile-image-{{ $profile->id }}" name="image" type="file" accept="image/*" data-max-upload-bytes="3670016">
+                                </div>
+                                <div>
+                                    <label class="admin-label" for="profile-sort-{{ $profile->id }}">Urutan</label>
+                                    <input class="admin-input" id="profile-sort-{{ $profile->id }}" name="sort_order" type="number" min="0" value="{{ old('sort_order', $profile->sort_order) }}">
+                                </div>
+                            </div>
+                            <label class="flex items-center gap-3 text-sm font-semibold text-[#d9d3cf]">
+                                <input class="h-4 w-4 accent-[#ffb3b1]" type="checkbox" name="is_visible" value="1" @checked($profile->is_visible)>
+                                Tampilkan di halaman depan
+                            </label>
+                            <button class="w-full border border-[#ffb3b1] px-4 py-3 font-bold text-[#ffb3b1] transition hover:bg-[#ffb3b1] hover:text-[#3b0509]" type="submit">Update Profile</button>
+                        </form>
+                        <form class="px-5 pb-5" method="POST" action="{{ route('admin.portfolio.destroy', $profile) }}" onsubmit="return confirm('Hapus profile ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button class="w-full border border-white/15 px-4 py-3 font-bold text-white transition hover:bg-white/10" type="submit">Hapus Profile</button>
+                        </form>
+                    </article>
+                @empty
+                    <div class="border border-white/10 bg-[#191919] p-8 text-[#c9c1bd] md:col-span-2 lg:col-span-3">
+                        Belum ada profile tambahan. Beni tetap tampil sebagai profile default.
+                    </div>
+                @endforelse
+            </div>
+        </section>
+
         <section class="grid gap-8 lg:grid-cols-[360px_1fr] lg:items-start">
             <form class="border border-white/10 bg-[#191919] p-6 lg:sticky lg:top-6" method="POST" action="{{ route('admin.portfolio.store') }}" enctype="multipart/form-data">
                 @csrf
@@ -228,8 +317,8 @@
                     </div>
                     <div>
                         <label class="admin-label" for="image">Foto / Video</label>
-                        <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="image" name="image" type="file" accept="image/*,video/mp4,video/quicktime,video/webm,video/x-msvideo" required>
-                        <p class="mt-2 text-xs font-semibold text-[#bdb4b0]">Foto otomatis mengikuti frame. Video maksimal 50MB.</p>
+                        <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="image" name="image" type="file" accept="image/*,video/mp4,video/quicktime,video/webm,video/x-msvideo" data-max-upload-bytes="3670016" required>
+                        <p class="mt-2 text-xs font-semibold text-[#bdb4b0]">Foto otomatis dikompres sebelum upload. Video besar perlu dipasang sebagai file static.</p>
                     </div>
                     <div>
                         <label class="admin-label" for="sort_order">Urutan</label>
@@ -277,7 +366,7 @@
                                 <div class="grid gap-4 sm:grid-cols-[1fr_120px]">
                                     <div>
                                         <label class="admin-label" for="image-{{ $photo->id }}">Ganti Foto / Video</label>
-                                        <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-3 file:py-2 file:font-bold file:text-[#3b0509]" id="image-{{ $photo->id }}" name="image" type="file" accept="image/*,video/mp4,video/quicktime,video/webm,video/x-msvideo">
+                                        <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-3 file:py-2 file:font-bold file:text-[#3b0509]" id="image-{{ $photo->id }}" name="image" type="file" accept="image/*,video/mp4,video/quicktime,video/webm,video/x-msvideo" data-max-upload-bytes="3670016">
                                     </div>
                                     <div>
                                         <label class="admin-label" for="sort-{{ $photo->id }}">Urutan</label>

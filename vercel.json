@@ -9,8 +9,8 @@
   "env": {
     "APP_ENV": "production",
     "APP_DEBUG": "false",
-    "APP_URL": "https://rd-potrait-project-beni.vercel.app",
-    "ASSET_URL": "https://rd-potrait-project-beni.vercel.app",
+    "APP_URL": "https://rd-potrait.vercel.app",
+    "ASSET_URL": "https://rd-potrait.vercel.app",
     "APP_CONFIG_CACHE": "/tmp/config.php",
     "APP_EVENTS_CACHE": "/tmp/events.php",
     "APP_PACKAGES_CACHE": "/tmp/packages.php",
@@ -42,12 +42,20 @@
       "dest": "/videos/$1"
     },
     {
+      "src": "/audio/(.*)",
+      "dest": "/audio/$1"
+    },
+    {
       "src": "/favicon.ico",
       "dest": "/favicon.ico"
     },
     {
       "src": "/robots.txt",
       "dest": "/robots.txt"
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml"
     },
     {
       "src": "/(.*)",

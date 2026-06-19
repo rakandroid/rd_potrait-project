@@ -9,6 +9,7 @@ class PortfolioPhoto extends Model
     protected $fillable = [
         'title',
         'category',
+        'description',
         'placement',
         'media_type',
         'image_path',

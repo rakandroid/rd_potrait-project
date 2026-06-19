@@ -107,6 +107,204 @@ document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
     });
 });
 
+const readImage = (file) => new Promise((resolve, reject) => {
+    const image = new Image();
+    const url = URL.createObjectURL(file);
+
+    image.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(image);
+    };
+
+    image.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Image failed to load'));
+    };
+
+    image.src = url;
+});
+
+const canvasToBlob = (canvas, quality) => new Promise((resolve) => {
+    canvas.toBlob(resolve, 'image/jpeg', quality);
+});
+
+const compressImageFile = async (file, maxBytes) => {
+    const image = await readImage(file);
+    const maxSide = 1800;
+    const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement('canvas');
+
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    for (const quality of [0.82, 0.72, 0.62, 0.52, 0.42]) {
+        const blob = await canvasToBlob(canvas, quality);
+
+        if (blob && blob.size <= maxBytes) {
+            return new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+            });
+        }
+    }
+
+    return null;
+};
+
+document.querySelectorAll('input[type="file"][data-max-upload-bytes]').forEach((input) => {
+    const maxBytes = Number(input.dataset.maxUploadBytes);
+    const maxMegabytes = (maxBytes / 1024 / 1024).toFixed(1);
+
+    input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+
+        input.setCustomValidity('');
+
+        if (!file || !maxBytes || file.size <= maxBytes) {
+            input.dataset.compressingUpload = 'false';
+            return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+            input.value = '';
+            input.setCustomValidity(`Ukuran file maksimal ${maxMegabytes}MB untuk upload di Vercel.`);
+            input.reportValidity();
+            return;
+        }
+
+        input.dataset.compressingUpload = 'true';
+
+        try {
+            const compressedFile = await compressImageFile(file, maxBytes);
+
+            if (!compressedFile) {
+                input.value = '';
+                input.setCustomValidity(`Foto belum bisa dikompres di bawah ${maxMegabytes}MB. Coba crop atau kecilkan dulu.`);
+                input.reportValidity();
+                return;
+            }
+
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(compressedFile);
+            input.files = dataTransfer.files;
+            input.setCustomValidity('');
+        } catch {
+            input.value = '';
+            input.setCustomValidity('Foto belum bisa diproses. Coba gunakan file JPG atau PNG lain.');
+            input.reportValidity();
+        } finally {
+            input.dataset.compressingUpload = 'false';
+        }
+    });
+
+    input.form?.addEventListener('submit', (event) => {
+        if (input.dataset.compressingUpload === 'true') {
+            event.preventDefault();
+            input.setCustomValidity('Tunggu sebentar, foto sedang dikompres.');
+            input.reportValidity();
+        }
+    });
+});
+
+const backgroundAudio = document.querySelector('[data-background-audio]');
+const audioToggle = document.querySelector('[data-audio-toggle]');
+const focusVideos = Array.from(document.querySelectorAll('[data-focus-video]'));
+
+if (backgroundAudio && audioToggle) {
+    let audioWanted = true;
+    let pausedByVideo = false;
+
+    const updateAudioButton = () => {
+        const isPlaying = !backgroundAudio.paused;
+
+        audioToggle.textContent = isPlaying ? 'Jeda lagu' : 'Nyalakan lagu';
+        audioToggle.setAttribute('aria-pressed', String(isPlaying));
+        audioToggle.classList.toggle('is-playing', isPlaying);
+    };
+
+    const playBackgroundAudio = async () => {
+        if (!audioWanted || pausedByVideo || document.hidden) {
+            updateAudioButton();
+            return;
+        }
+
+        backgroundAudio.volume = 0.42;
+
+        try {
+            await backgroundAudio.play();
+        } catch {
+            backgroundAudio.pause();
+        } finally {
+            updateAudioButton();
+        }
+    };
+
+    const pauseBackgroundAudio = () => {
+        backgroundAudio.pause();
+        updateAudioButton();
+    };
+
+    audioToggle.addEventListener('click', () => {
+        audioWanted = backgroundAudio.paused;
+        pausedByVideo = false;
+
+        if (audioWanted) {
+            playBackgroundAudio();
+            return;
+        }
+
+        pauseBackgroundAudio();
+    });
+
+    focusVideos.forEach((video) => {
+        video.addEventListener('loadeddata', () => {
+            video.classList.add('is-video-ready');
+            video.classList.remove('is-video-error');
+        }, { once: true });
+
+        video.addEventListener('error', () => {
+            video.classList.add('is-video-error');
+            video.classList.remove('is-video-ready');
+        });
+
+        video.addEventListener('play', () => {
+            pausedByVideo = true;
+            pauseBackgroundAudio();
+
+            focusVideos
+                .filter((otherVideo) => otherVideo !== video)
+                .forEach((otherVideo) => otherVideo.pause());
+        });
+
+        ['pause', 'ended'].forEach((eventName) => {
+            video.addEventListener(eventName, () => {
+                const hasPlayingVideo = focusVideos.some((item) => !item.paused && !item.ended);
+
+                if (!hasPlayingVideo) {
+                    pausedByVideo = false;
+                    playBackgroundAudio();
+                }
+            });
+        });
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            pauseBackgroundAudio();
+            return;
+        }
+
+        playBackgroundAudio();
+    });
+
+    ['click', 'touchstart', 'keydown'].forEach((eventName) => {
+        document.addEventListener(eventName, playBackgroundAudio, { once: true, passive: true });
+    });
+
+    playBackgroundAudio();
+}
+
 document.querySelectorAll('[data-rating-picker]').forEach((picker) => {
     const ratingText = picker.parentElement?.querySelector('[data-rating-text]');
     const inputs = picker.querySelectorAll('input[name="rating"]');

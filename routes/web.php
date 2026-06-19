@@ -40,7 +40,7 @@ Route::get('/', function () {
         $portfolioMedia = collect([
             ['title' => 'Portrait Session', 'category' => 'Portrait', 'image' => 'beni-profile-camera.jpeg'],
             ['title' => 'Character Study', 'category' => 'Portrait', 'image' => 'beni-character.jpeg'],
-            ['title' => 'Video Highlight', 'category' => 'Video', 'video' => 'portrait-background-reference.mp4'],
+            ['title' => 'Video Highlight', 'category' => 'Video', 'video' => 'jzjrPp4LqmWRtjA3wKHe1Fd3Kpc2T12drRK0nmVI.mp4'],
         ])->map(fn (array $photo) => (object) [
             'title' => $photo['title'],
             'category' => $photo['category'],
@@ -57,12 +57,31 @@ Route::get('/', function () {
         ->take(6)
         ->get();
 
+    $defaultProfiles = collect([
+        (object) [
+            'title' => 'Raden Beni Darmansyah',
+            'category' => 'Profile',
+            'description' => 'Ada banyak cerita di dunia ini yang terlalu sunyi untuk didengar, namun terlalu indah untuk dilewatkan. Saya memilih menjadi perantara bagi cerita-cerita itu; mendokumentasikan senyapnya perjuangan, ketulusan cinta, dan air mata yang berbicara tanpa suara',
+            'image_url' => file_exists(public_path('images/beni-character.png'))
+                ? asset('images/beni-character.png')
+                : asset('images/beni-character.jpeg'),
+        ],
+    ]);
+
+    $profiles = PortfolioPhoto::query()
+        ->where('placement', 'profile')
+        ->where('is_visible', true)
+        ->orderBy('sort_order')
+        ->latest()
+        ->get();
+
     return view('welcome', [
         'heroPhotos' => $heroPhotos->take(6),
         'portfolioMedia' => $portfolioMedia,
         'portfolioVideos' => $portfolioMedia->where('media_type', 'video'),
         'portfolioPhotos' => $portfolioMedia->where('media_type', 'image'),
         'audienceTestimonials' => $audienceTestimonials,
+        'profiles' => $defaultProfiles->concat($profiles),
     ]);
 });
 

@@ -3,11 +3,33 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="R&D Photography, studio fotografi dan videografi untuk wedding, pre-wedding, event, dan portrait.">
-    <title>R&D Photography</title>
+    <meta name="description" content="R&D Photography adalah jasa fotografi dan videografi untuk wedding, pre-wedding, event, cinematic video, dan portrait. Booking R&D Potrait langsung via WhatsApp.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ url('/') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="R&D Photography - Wedding, Event, Portrait">
+    <meta property="og:description" content="Jasa fotografi dan videografi untuk wedding, pre-wedding, event, cinematic video, dan portrait.">
+    <meta property="og:url" content="{{ url('/') }}">
+    <meta property="og:image" content="{{ asset('images/rd-potrait-logo.png') }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>R&D Photography - Wedding, Event, Portrait</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "LocalBusiness",
+            "name": "R&D Photography",
+            "url": "{{ url('/') }}",
+            "image": "{{ asset('images/rd-potrait-logo.png') }}",
+            "description": "Jasa fotografi dan videografi untuk wedding, pre-wedding, event, cinematic video, dan portrait.",
+            "sameAs": [
+                "https://www.instagram.com/rd_potrait?igsh=MXA4NDV0emJjN2Nsag==",
+                "https://www.tiktok.com/@r.benidarmansyah?lang=en"
+            ]
+        }
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="overflow-x-hidden bg-[#111111] text-[#f3f0ed] antialiased" data-open-admin-modal="{{ ($errors->has('email') || $errors->has('password')) ? 'true' : 'false' }}">
@@ -154,15 +176,26 @@
                 <h2>Galeri R&D Potrait</h2>
             </div>
 
+            @php
+                $videoPoster = $portfolioPhotos->first()?->image_url ?? asset('images/portfolio/beni-profile-camera.jpeg');
+                $videoMimeType = fn (string $url) => match (strtolower(pathinfo(parse_url($url, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION))) {
+                    'webm' => 'video/webm',
+                    'mov' => 'video/quicktime',
+                    default => 'video/mp4',
+                };
+            @endphp
+
             @if ($portfolioMedia->isNotEmpty())
                 <div class="portfolio-showcase reveal" style="--portfolio-slide-duration: {{ max($portfolioMedia->count(), 3) * 4 }}s;">
                     <div class="portfolio-showcase-stage">
                         @foreach ($portfolioMedia as $media)
                             <figure class="portfolio-showcase-slide" style="animation-delay: {{ $loop->index * 4 }}s;">
                                 @if ($media->media_type === 'video')
-                                    <video src="{{ $media->image_url }}" autoplay muted loop playsinline preload="metadata"></video>
+                                    <video controls playsinline preload="metadata" poster="{{ $videoPoster }}" data-focus-video>
+                                        <source src="{{ $media->image_url }}" type="{{ $videoMimeType($media->image_url) }}">
+                                    </video>
                                 @else
-                                    <img src="{{ $media->image_url }}" alt="{{ $media->title }}">
+                                    <img src="{{ $media->image_url }}" alt="{{ $media->title }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}" decoding="async">
                                 @endif
                                 <figcaption>
                                     <span>{{ $media->title }}</span>
@@ -184,7 +217,9 @@
                     <div class="portfolio-video-list {{ $portfolioVideos->count() === 1 ? 'portfolio-video-list--single' : '' }} grid gap-5 {{ $portfolioVideos->count() > 1 ? 'md:grid-cols-2 lg:grid-cols-1' : '' }}">
                         @foreach ($portfolioVideos as $video)
                             <figure class="portfolio-video reveal">
-                                <video src="{{ $video->image_url }}" controls preload="metadata" playsinline></video>
+                                <video controls preload="metadata" playsinline poster="{{ $videoPoster }}" data-focus-video>
+                                    <source src="{{ $video->image_url }}" type="{{ $videoMimeType($video->image_url) }}">
+                                </video>
                                 <figcaption>
                                     <span>{{ $video->title }}</span>
                                     <small>{{ $video->category }}</small>
@@ -194,40 +229,32 @@
                     </div>
                 @endif
 
-                    <aside class="portfolio-character reveal {{ $portfolioVideos->isEmpty() ? 'portfolio-character--standalone' : '' }}" aria-label="Profil Raden Beni Darmansyah">
-                        <div class="portfolio-character-visual" aria-hidden="true">
-                            @php
-                                $beniCharacter = file_exists(public_path('images/beni-character.png'))
-                                    ? asset('images/beni-character.png')
-                                    : (file_exists(public_path('images/beni-character.jpeg')) ? asset('images/beni-character.jpeg') : null);
-                                $beniProfileCamera = file_exists(public_path('images/beni-profile-camera.jpeg'))
-                                    ? asset('images/beni-profile-camera.jpeg')
-                                    : null;
-                                $beniProfiles = collect([$beniCharacter, $beniProfileCamera])->filter();
-                            @endphp
-
-                            @if ($beniProfiles->isNotEmpty())
-                                <div class="portfolio-character-slider" style="--profile-slide-duration: {{ $beniProfiles->count() * 4.6 }}s;">
-                                    @foreach ($beniProfiles as $profileImage)
-                                        <img src="{{ $profileImage }}" alt="" style="animation-delay: {{ $loop->index * 4.6 }}s;">
-                                    @endforeach
+                    <div class="portfolio-character-list grid gap-5">
+                        @foreach ($profiles as $profile)
+                            <aside class="portfolio-character reveal {{ $portfolioVideos->isEmpty() ? 'portfolio-character--standalone' : '' }}" aria-label="Profil {{ $profile->title }}">
+                                <div class="portfolio-character-visual" aria-hidden="true">
+                                    @if ($profile->image_url)
+                                        <div class="portfolio-character-slider">
+                                            <img src="{{ $profile->image_url }}" alt="" loading="lazy" decoding="async">
+                                        </div>
+                                    @else
+                                        <span>{{ collect(explode(' ', $profile->title))->map(fn ($word) => mb_substr($word, 0, 1))->take(2)->join('') }}</span>
+                                    @endif
                                 </div>
-                            @else
-                                <span>BD</span>
-                            @endif
-                        </div>
-                        <div class="portfolio-character-copy">
-                            <p class="eyebrow">Profile</p>
-                            <h4>Raden Beni Darmansyah</h4>
-                            <p>Ada banyak cerita di dunia ini yang terlalu sunyi untuk didengar, namun terlalu indah untuk dilewatkan. Saya memilih menjadi perantara bagi cerita-cerita itu; mendokumentasikan senyapnya perjuangan, ketulusan cinta, dan air mata yang berbicara tanpa suara</p>
-                        </div>
-                    </aside>
+                                <div class="portfolio-character-copy">
+                                    <p class="eyebrow">{{ $profile->category ?: 'Profile' }}</p>
+                                    <h4>{{ $profile->title }}</h4>
+                                    <p>{{ $profile->description }}</p>
+                                </div>
+                            </aside>
+                        @endforeach
+                    </div>
             </div>
 
             <div class="portfolio-grid grid auto-rows-[280px] gap-5 md:grid-cols-4">
                 @forelse ($portfolioPhotos as $photo)
                     <figure class="portfolio-tile photo-print reveal {{ $loop->first ? 'md:col-span-2 md:row-span-2' : ($loop->iteration % 4 === 0 ? 'md:col-span-2' : '') }}">
-                        <img src="{{ $photo->image_url }}" alt="{{ $photo->title }}">
+                        <img src="{{ $photo->image_url }}" alt="{{ $photo->title }}" loading="lazy" decoding="async">
                         <figcaption>{{ $photo->title }} <span class="block text-sm font-semibold text-[#c9c1bd]">{{ $photo->category }}</span></figcaption>
                     </figure>
                 @empty
@@ -450,6 +477,13 @@
                 </button>
             </form>
         </section>
+    </div>
+
+    <div class="site-audio" data-audio-widget>
+        <audio src="{{ asset('audio/until-i-found-you-violin-cover.mp3') }}" loop preload="auto" data-background-audio></audio>
+        <button class="site-audio-toggle" type="button" data-audio-toggle aria-pressed="false">
+            Nyalakan lagu
+        </button>
     </div>
 
     <footer class="relative z-10 border-t border-white/10 bg-[#0d0d0d] px-5 py-10 sm:px-8 lg:px-10">

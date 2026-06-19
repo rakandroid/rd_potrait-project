@@ -12,6 +12,8 @@ use Illuminate\View\View;
 
 class PortfolioPhotoController extends Controller
 {
+    private const VERCEL_UPLOAD_MAX_KILOBYTES = 3584;
+
     public function index(): View
     {
         return view('admin.dashboard', [
@@ -22,6 +24,11 @@ class PortfolioPhotoController extends Controller
                 ->get(),
             'photos' => PortfolioPhoto::query()
                 ->where('placement', 'portfolio')
+                ->orderBy('sort_order')
+                ->latest()
+                ->get(),
+            'profiles' => PortfolioPhoto::query()
+                ->where('placement', 'profile')
                 ->orderBy('sort_order')
                 ->latest()
                 ->get(),
@@ -37,8 +44,9 @@ class PortfolioPhotoController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:120'],
             'category' => ['required', 'string', 'max:80'],
-            'placement' => ['required', 'in:hero,portfolio'],
-            'image' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,gif,mp4,mov,webm,avi', 'max:51200'],
+            'placement' => ['required', 'in:hero,portfolio,profile'],
+            'description' => ['nullable', 'string', 'max:1200'],
+            'image' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,gif,mp4,mov,webm,avi', 'max:'.self::VERCEL_UPLOAD_MAX_KILOBYTES],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_visible' => ['nullable', 'boolean'],
         ]);
@@ -49,6 +57,12 @@ class PortfolioPhotoController extends Controller
         if ($data['placement'] === 'hero' && $data['media_type'] !== 'image') {
             return back()
                 ->withErrors(['image' => 'Slide welcome hanya bisa memakai file foto.'])
+                ->withInput();
+        }
+
+        if ($data['placement'] === 'profile' && $data['media_type'] !== 'image') {
+            return back()
+                ->withErrors(['image' => 'Karakter/profile hanya bisa memakai file foto.'])
                 ->withInput();
         }
 
@@ -66,8 +80,9 @@ class PortfolioPhotoController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:120'],
             'category' => ['required', 'string', 'max:80'],
-            'placement' => ['required', 'in:hero,portfolio'],
-            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif,mp4,mov,webm,avi', 'max:51200'],
+            'placement' => ['required', 'in:hero,portfolio,profile'],
+            'description' => ['nullable', 'string', 'max:1200'],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif,mp4,mov,webm,avi', 'max:'.self::VERCEL_UPLOAD_MAX_KILOBYTES],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_visible' => ['nullable', 'boolean'],
         ]);
@@ -79,6 +94,12 @@ class PortfolioPhotoController extends Controller
             if ($data['placement'] === 'hero' && $data['media_type'] !== 'image') {
                 return back()
                     ->withErrors(['image' => 'Slide welcome hanya bisa memakai file foto.'])
+                    ->withInput();
+            }
+
+            if ($data['placement'] === 'profile' && $data['media_type'] !== 'image') {
+                return back()
+                    ->withErrors(['image' => 'Karakter/profile hanya bisa memakai file foto.'])
                     ->withInput();
             }
 
