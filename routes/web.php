@@ -25,7 +25,7 @@ Route::get('/', function () {
     if ($heroPhotos->isEmpty()) {
         $heroPhotos = collect(range(1, 6))->map(fn (int $index) => (object) [
             'title' => "R&D Portrait {$index}",
-            'image_url' => '/storage/hero/model-0'.$index.'.jpeg',
+            'image_url' => asset('images/hero/model-0'.$index.'.jpeg'),
         ]);
     }
 
@@ -35,6 +35,21 @@ Route::get('/', function () {
         ->orderBy('sort_order')
         ->latest()
         ->get();
+
+    if ($portfolioMedia->isEmpty()) {
+        $portfolioMedia = collect([
+            ['title' => 'Portrait Session', 'category' => 'Portrait', 'image' => 'beni-profile-camera.jpeg'],
+            ['title' => 'Character Study', 'category' => 'Portrait', 'image' => 'beni-character.jpeg'],
+            ['title' => 'Video Highlight', 'category' => 'Video', 'video' => 'portrait-background-reference.mp4'],
+        ])->map(fn (array $photo) => (object) [
+            'title' => $photo['title'],
+            'category' => $photo['category'],
+            'media_type' => isset($photo['video']) ? 'video' : 'image',
+            'image_url' => isset($photo['video'])
+                ? asset('videos/'.$photo['video'])
+                : asset('images/portfolio/'.$photo['image']),
+        ]);
+    }
 
     $audienceTestimonials = AudienceTestimonial::query()
         ->where('is_visible', true)

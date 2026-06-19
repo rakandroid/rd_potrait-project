@@ -66,13 +66,13 @@
             <div class="hero-ambient absolute inset-0"></div>
             <div class="absolute inset-0 z-[2] bg-[linear-gradient(90deg,rgba(8,8,8,0.92)_0%,rgba(8,8,8,0.82)_38%,rgba(17,17,17,0.32)_58%,rgba(17,17,17,0.12)_100%)]"></div>
             <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[#111111]"></div>
-            <div class="relative mx-auto grid min-h-[calc(92vh-80px)] max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[0.92fr_1.08fr] lg:px-10">
+            <div class="hero-layout relative mx-auto grid min-h-[calc(92vh-80px)] max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[0.92fr_1.08fr] lg:px-10">
                 <div class="hero-copy max-w-3xl reveal">
                     <span class="hero-copy-accent" aria-hidden="true"></span>
                     <p class="mb-5 text-sm font-bold uppercase text-[#ffb3b1]">Portrait, Wedding, Event</p>
-                    <h1 class="font-display text-3xl font-bold leading-[1.12] text-white sm:text-4xl lg:text-3xl">Membajak momen dari waktu, menyimpannya dalam bentuk rindu.</h1>
-                    <p class="mt-7 max-w-2xl text-lg font-medium leading-8 text-[#f0e8e4]">"Dunia bergerak terlalu cepat, dan ingatan manusia sering kali mengkhianati waktu. Tugas kami adalah menghentikan waktu tersebut tepat di momen terbaiknya. Tanpa skenario, tanpa kepura-puraan. Kami tidak hanya menangkap sebuah gambar, tapi sebuah jiwa. Kami merekam esensi dari sebuah momen, dinamika jalanan, dan detak kehidupan yang jujur. Ketika Anda melihat kembali foto-foto ini bertahun-tahun kemudian, Anda tidak hanya mengingat apa yang terjadi, tetapi siapa Anda saat itu".</p>
-                    <div class="mt-10 flex flex-col gap-4 sm:flex-row">
+                    <h1 class="hero-title font-display text-3xl font-bold leading-[1.12] text-white sm:text-4xl lg:text-3xl">Membajak momen dari waktu, menyimpannya dalam bentuk rindu.</h1>
+                    <p class="hero-lede mt-7 max-w-2xl text-lg font-medium leading-8 text-[#f0e8e4]">"Dunia bergerak terlalu cepat, dan ingatan manusia sering kali mengkhianati waktu. Tugas kami adalah menghentikan waktu tersebut tepat di momen terbaiknya. Tanpa skenario, tanpa kepura-puraan. Kami tidak hanya menangkap sebuah gambar, tapi sebuah jiwa. Kami merekam esensi dari sebuah momen, dinamika jalanan, dan detak kehidupan yang jujur. Ketika Anda melihat kembali foto-foto ini bertahun-tahun kemudian, Anda tidak hanya mengingat apa yang terjadi, tetapi siapa Anda saat itu".</p>
+                    <div class="hero-actions mt-10 flex flex-col gap-4 sm:flex-row">
                         <a class="inline-flex justify-center bg-[#ffb3b1] px-7 py-4 font-bold text-[#3b0509] transition hover:bg-[#ffd6d3]" href="#portfolio">Lihat Portfolio</a>
                         <a class="inline-flex justify-center border border-white/20 px-7 py-4 font-bold text-white transition hover:border-white hover:bg-white/10" href="#layanan">Pilih Layanan</a>
                     </div>
@@ -179,8 +179,8 @@
                 </div>
             @endif
 
-            @if ($portfolioVideos->isNotEmpty())
-                <div class="portfolio-video-feature mb-8 grid gap-5 lg:grid-cols-[1.35fr_0.65fr]">
+            <div class="portfolio-video-feature mb-8 grid gap-5 {{ $portfolioVideos->isNotEmpty() ? 'lg:grid-cols-[1.35fr_0.65fr]' : 'lg:grid-cols-1' }}">
+                @if ($portfolioVideos->isNotEmpty())
                     <div class="portfolio-video-list {{ $portfolioVideos->count() === 1 ? 'portfolio-video-list--single' : '' }} grid gap-5 {{ $portfolioVideos->count() > 1 ? 'md:grid-cols-2 lg:grid-cols-1' : '' }}">
                         @foreach ($portfolioVideos as $video)
                             <figure class="portfolio-video reveal">
@@ -192,8 +192,9 @@
                             </figure>
                         @endforeach
                     </div>
+                @endif
 
-                    <aside class="portfolio-character reveal" aria-label="Profil Raden Beni Darmansyah">
+                    <aside class="portfolio-character reveal {{ $portfolioVideos->isEmpty() ? 'portfolio-character--standalone' : '' }}" aria-label="Profil Raden Beni Darmansyah">
                         <div class="portfolio-character-visual" aria-hidden="true">
                             @php
                                 $beniCharacter = file_exists(public_path('images/beni-character.png'))
@@ -221,10 +222,9 @@
                             <p>Ada banyak cerita di dunia ini yang terlalu sunyi untuk didengar, namun terlalu indah untuk dilewatkan. Saya memilih menjadi perantara bagi cerita-cerita itu; mendokumentasikan senyapnya perjuangan, ketulusan cinta, dan air mata yang berbicara tanpa suara</p>
                         </div>
                     </aside>
-                </div>
-            @endif
+            </div>
 
-            <div class="grid auto-rows-[280px] gap-5 md:grid-cols-4">
+            <div class="portfolio-grid grid auto-rows-[280px] gap-5 md:grid-cols-4">
                 @forelse ($portfolioPhotos as $photo)
                     <figure class="portfolio-tile photo-print reveal {{ $loop->first ? 'md:col-span-2 md:row-span-2' : ($loop->iteration % 4 === 0 ? 'md:col-span-2' : '') }}">
                         <img src="{{ $photo->image_url }}" alt="{{ $photo->title }}">
