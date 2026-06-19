@@ -6,6 +6,27 @@
       "runtime": "vercel-php@0.7.1"
     }
   },
+  "env": {
+    "APP_ENV": "production",
+    "APP_DEBUG": "false",
+    "APP_URL": "https://rd-potrait-project-beni.vercel.app",
+    "APP_CONFIG_CACHE": "/tmp/config.php",
+    "APP_EVENTS_CACHE": "/tmp/events.php",
+    "APP_PACKAGES_CACHE": "/tmp/packages.php",
+    "APP_ROUTES_CACHE": "/tmp/routes.php",
+    "APP_SERVICES_CACHE": "/tmp/services.php",
+    "VIEW_COMPILED_PATH": "/tmp",
+    "LOG_CHANNEL": "stderr",
+    "CACHE_STORE": "array",
+    "SESSION_DRIVER": "cookie",
+    "QUEUE_CONNECTION": "sync",
+    "DB_CONNECTION": "pgsql",
+    "DB_HOST": "aws-1-ap-northeast-2.pooler.supabase.com",
+    "DB_PORT": "5432",
+    "DB_DATABASE": "postgres",
+    "DB_USERNAME": "postgres.nnxmtbganxwbkisbwqrn",
+    "DB_SSLMODE": "require"
+  },
   "routes": [
     {
       "src": "/build/(.*)",
