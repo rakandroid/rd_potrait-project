@@ -45,7 +45,12 @@ class PortfolioPhoto extends Model
         }
 
         if (str_starts_with($mediaPath, 'data:')) {
-            return $mediaPath;
+            $field = $mediaPath === $this->poster_path ? 'poster' : 'image';
+
+            return route('portfolio.media', [
+                'portfolioPhoto' => $this,
+                'field' => $field,
+            ]);
         }
 
         if (str_starts_with($mediaPath, 'http')) {

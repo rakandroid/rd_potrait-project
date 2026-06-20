@@ -34,17 +34,7 @@
 </head>
 <body class="overflow-x-hidden bg-[#111111] text-[#f3f0ed] antialiased" data-open-admin-modal="{{ ($errors->has('email') || $errors->has('password')) ? 'true' : 'false' }}">
     <div class="joy-gate" data-joy-gate role="dialog" aria-modal="true" aria-labelledby="joy-gate-title">
-        <div class="joy-gate-sky" aria-hidden="true">
-            <span class="joy-flower joy-flower-a"></span>
-            <span class="joy-flower joy-flower-b"></span>
-            <span class="joy-flower joy-flower-c"></span>
-            @foreach (range(1, 24) as $petal)
-                <span class="joy-petal" style="--i: {{ $petal }}; --drift: {{ (($petal % 5) - 2) * 7 }}vw; --drift-soft: {{ (($petal % 5) - 2) * -2.45 }}vw; --delay: {{ ($petal % 6) * 80 }}ms; --idle-delay: -{{ $petal * 0.42 }}s;"></span>
-            @endforeach
-            @foreach (range(1, 10) as $butterfly)
-                <span class="joy-butterfly" style="--i: {{ $butterfly }}; --rise: {{ (($butterfly % 3) - 1) * 16 }}vh; --top: {{ 18 + (($butterfly % 4) * 14) }}%; --delay: {{ ($butterfly % 4) * 120 }}ms; --idle-delay: -{{ $butterfly * 0.7 }}s;"></span>
-            @endforeach
-        </div>
+        <div class="joy-gate-art" aria-hidden="true"></div>
         <section class="joy-gate-card">
             <img src="{{ asset('images/rd-potrait-logo.png') }}" alt="RD Potrait">
             <h2 id="joy-gate-title">Apakah anda siap berbahagia bersama kami?</h2>
@@ -254,18 +244,40 @@
                 </div>
             @endif
 
-            <div class="portfolio-grid grid auto-rows-[280px] gap-5 md:grid-cols-4">
-                @forelse ($portfolioPhotos as $photo)
-                    <figure class="portfolio-tile photo-print reveal {{ $loop->first ? 'md:col-span-2 md:row-span-2' : ($loop->iteration % 4 === 0 ? 'md:col-span-2' : '') }}">
-                        <img src="{{ $photo->image_url }}" alt="{{ $photo->title }}" loading="lazy" decoding="async">
-                        <figcaption>{{ $photo->title }} <span class="block text-sm font-semibold text-[#c9c1bd]">{{ $photo->category }}</span></figcaption>
-                    </figure>
-                @empty
-                    <div class="reveal border border-white/10 bg-[#191919] p-8 text-[#c9c1bd] md:col-span-4">
+            @if ($portfolioPhotos->isNotEmpty())
+                <div class="portfolio-category-grid">
+                    @foreach ($portfolioPhotos->groupBy(fn ($photo) => $photo->category ?: 'Portfolio') as $category => $photos)
+                        <article class="portfolio-category-slider reveal" data-portfolio-slider>
+                            <div class="portfolio-category-toolbar">
+                                <div>
+                                    <p class="eyebrow">{{ $category }}</p>
+                                    <h3>{{ $photos->count() }} foto</h3>
+                                </div>
+                                <div class="portfolio-slider-controls" aria-label="Kontrol slider {{ $category }}">
+                                    <button type="button" data-portfolio-prev aria-label="Foto sebelumnya">&#8249;</button>
+                                    <button type="button" data-portfolio-next aria-label="Foto berikutnya">&#8250;</button>
+                                </div>
+                            </div>
+
+                            <div class="portfolio-slider-track" data-portfolio-track>
+                                @foreach ($photos as $photo)
+                                    <figure class="portfolio-slide">
+                                        <img src="{{ $photo->image_url }}" alt="{{ $photo->title }}" loading="lazy" decoding="async">
+                                        <figcaption>
+                                            <span>{{ $photo->title }}</span>
+                                            <small>{{ $photo->category }}</small>
+                                        </figcaption>
+                                    </figure>
+                                @endforeach
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @else
+                <div class="reveal border border-white/10 bg-[#191919] p-8 text-[#c9c1bd]">
                         Portfolio belum tersedia. Silakan tambahkan foto dari halaman admin.
-                    </div>
-                @endforelse
-            </div>
+                </div>
+            @endif
         </section>
 
         <section id="proses" class="scene-section section-wrap bg-[#171717]/85 backdrop-blur-sm">

@@ -15,7 +15,7 @@ use Illuminate\View\View;
 
 class PortfolioPhotoController extends Controller
 {
-    private const VERCEL_UPLOAD_MAX_KILOBYTES = 3584;
+    private const VERCEL_UPLOAD_MAX_KILOBYTES = 2048;
 
     public function index(): View
     {

@@ -9,10 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-[#111111] text-[#f3f0ed] antialiased">
-    <main class="flex min-h-screen items-center justify-center px-5 py-12">
-        <section class="relative w-full max-w-md border border-white/10 bg-[#191919] p-7">
-            <a class="absolute right-4 top-4 flex h-10 w-10 items-center justify-center border border-white/15 text-xl leading-none text-white transition hover:bg-white/10" href="{{ url('/') }}" aria-label="Tutup login admin">
+<body class="admin-auth-page min-h-screen text-[#f3f0ed] antialiased">
+    <main class="admin-auth-shell">
+        <section class="admin-login-card">
+            <a class="admin-close-button" href="{{ url('/') }}" aria-label="Tutup login admin">
                 &times;
             </a>
             <a href="{{ url('/') }}" class="brand-mark" aria-label="RD Potrait">
@@ -24,7 +24,7 @@
                 <p class="mt-4 leading-7 text-[#c9c1bd]">Masuk untuk mengelola foto portfolio di halaman depan.</p>
             </div>
 
-            <form class="mt-8 space-y-5" method="POST" action="{{ route('admin.login.store') }}">
+            <form class="admin-login-form mt-8 space-y-5" method="POST" action="{{ route('admin.login.store') }}">
                 @csrf
                 <div>
                     <label class="mb-2 block text-sm font-bold" for="email">Username Admin</label>
@@ -50,7 +50,7 @@
                     Ingat saya
                 </label>
 
-                <button class="w-full bg-[#ffb3b1] px-6 py-4 font-bold text-[#3b0509] transition hover:bg-[#ffd6d3]" type="submit">
+                <button class="admin-primary-button w-full" type="submit">
                     Masuk
                 </button>
             </form>

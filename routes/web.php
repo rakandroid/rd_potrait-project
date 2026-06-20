@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\PortfolioPhotoController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\PortfolioMediaController;
 use App\Http\Controllers\TestimonialController;
 use App\Models\AudienceTestimonial;
 use App\Models\PortfolioPhoto;
@@ -107,6 +108,9 @@ Route::get('/profile-fotografer', function () {
 
 Route::post('/booking', BookingController::class)->name('booking.store');
 Route::post('/testimoni', TestimonialController::class)->name('testimonials.store');
+Route::get('/media/portfolio/{portfolioPhoto}/{field?}', PortfolioMediaController::class)
+    ->whereIn('field', ['image', 'poster'])
+    ->name('portfolio.media');
 
 Route::middleware('guest')->group(function () {
     Route::get('/admin/login', [AuthController::class, 'create'])->name('admin.login');
