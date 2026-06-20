@@ -19,14 +19,14 @@ class DatabaseSeeder extends Seeder
         User::query()->updateOrCreate([
             'email' => 'beniken',
         ], [
-            'name' => 'Admin R&D Photography',
+            'name' => 'Admin RD Potrait',
             'password' => 'rdpotrait272822',
         ]);
 
         User::query()->updateOrCreate([
             'email' => 'rakun',
         ], [
-            'name' => 'Admin R&D Photography',
+            'name' => 'Admin RD Potrait',
             'password' => 'rakan1982',
         ]);
 
@@ -63,7 +63,7 @@ class DatabaseSeeder extends Seeder
 
         foreach (range(1, 6) as $index) {
             PortfolioPhoto::query()->updateOrCreate([
-                'title' => "R&D Portrait {$index}",
+                'title' => "RD Potrait {$index}",
                 'placement' => 'hero',
             ], [
                 'category' => 'Portrait',

@@ -1,9 +1,15 @@
 import './bootstrap';
 
+const joyGate = document.querySelector('[data-joy-gate]');
+const joyGateOpen = document.querySelector('[data-joy-gate-open]');
 const menuToggle = document.querySelector('[data-menu-toggle]');
 const mobileMenu = document.querySelector('#mobile-menu');
 const siteHeader = document.querySelector('[data-site-header]');
 let closeMobileMenu = () => {};
+
+if (joyGate) {
+    document.body.style.overflow = 'hidden';
+}
 
 if (menuToggle && mobileMenu) {
     closeMobileMenu = () => {
@@ -152,6 +158,182 @@ const compressImageFile = async (file, maxBytes) => {
     return null;
 };
 
+const cropModal = document.querySelector('[data-crop-modal]');
+const cropCanvas = document.querySelector('[data-crop-canvas]');
+const cropStage = document.querySelector('[data-crop-stage]');
+const cropZoom = document.querySelector('[data-crop-zoom]');
+const cropApply = document.querySelector('[data-crop-apply]');
+const cropCancel = document.querySelector('[data-crop-cancel]');
+const cropZoomIn = document.querySelector('[data-crop-zoom-in]');
+const cropZoomOut = document.querySelector('[data-crop-zoom-out]');
+
+if (cropModal && cropCanvas && cropStage && cropZoom && cropApply && cropCancel) {
+    const context = cropCanvas.getContext('2d');
+    let activeInput = null;
+    let activeImage = null;
+    let activeFileName = 'cropped.jpg';
+    let scale = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    const drawCrop = () => {
+        const rect = cropStage.getBoundingClientRect();
+        const size = Math.min(rect.width, rect.height);
+        const dpr = window.devicePixelRatio || 1;
+
+        cropCanvas.width = Math.round(size * dpr);
+        cropCanvas.height = Math.round(size * dpr);
+        cropCanvas.style.width = `${size}px`;
+        cropCanvas.style.height = `${size}px`;
+
+        context.setTransform(dpr, 0, 0, dpr, 0, 0);
+        context.clearRect(0, 0, size, size);
+        context.fillStyle = '#050505';
+        context.fillRect(0, 0, size, size);
+
+        if (!activeImage) {
+            return;
+        }
+
+        const baseScale = Math.max(size / activeImage.naturalWidth, size / activeImage.naturalHeight);
+        const imageWidth = activeImage.naturalWidth * baseScale * scale;
+        const imageHeight = activeImage.naturalHeight * baseScale * scale;
+        const minOffsetX = Math.min(0, size - imageWidth);
+        const minOffsetY = Math.min(0, size - imageHeight);
+
+        offsetX = Math.min(0, Math.max(minOffsetX, offsetX));
+        offsetY = Math.min(0, Math.max(minOffsetY, offsetY));
+
+        context.drawImage(activeImage, offsetX, offsetY, imageWidth, imageHeight);
+    };
+
+    const openCropModal = async (input, file) => {
+        activeInput = input;
+        activeImage = await readImage(file);
+        activeFileName = file.name.replace(/\.[^.]+$/, '.jpg');
+        scale = 1;
+        offsetX = 0;
+        offsetY = 0;
+        cropZoom.value = '1';
+        cropModal.classList.remove('hidden');
+        cropModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        window.setTimeout(drawCrop, 40);
+    };
+
+    document.querySelectorAll('input[type="file"][data-crop-upload]').forEach((input) => {
+        input.addEventListener('change', async () => {
+            const file = input.files?.[0];
+
+            if (!file || input.dataset.cropApplied === 'true' || !file.type.startsWith('image/')) {
+                input.dataset.cropApplied = 'false';
+                return;
+            }
+
+            input.dataset.cropPending = 'true';
+
+            try {
+                await openCropModal(input, file);
+            } catch {
+                input.dataset.cropPending = 'false';
+                input.setCustomValidity('Foto belum bisa dibuka untuk crop. Coba file lain.');
+                input.reportValidity();
+            }
+        });
+    });
+
+    const closeCropModal = () => {
+        cropModal.classList.add('hidden');
+        cropModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+
+        if (activeInput) {
+            activeInput.dataset.cropPending = 'false';
+        }
+    };
+
+    cropStage.addEventListener('pointerdown', (event) => {
+        dragging = true;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        cropStage.setPointerCapture(event.pointerId);
+    });
+
+    cropStage.addEventListener('pointermove', (event) => {
+        if (!dragging) {
+            return;
+        }
+
+        offsetX += event.clientX - lastX;
+        offsetY += event.clientY - lastY;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        drawCrop();
+    });
+
+    cropStage.addEventListener('pointerup', () => {
+        dragging = false;
+    });
+
+    cropZoom.addEventListener('input', () => {
+        scale = Number(cropZoom.value);
+        drawCrop();
+    });
+
+    cropZoomIn?.addEventListener('click', () => {
+        cropZoom.value = String(Math.min(3, Number(cropZoom.value) + 0.1));
+        cropZoom.dispatchEvent(new Event('input'));
+    });
+
+    cropZoomOut?.addEventListener('click', () => {
+        cropZoom.value = String(Math.max(1, Number(cropZoom.value) - 0.1));
+        cropZoom.dispatchEvent(new Event('input'));
+    });
+
+    cropCancel.addEventListener('click', () => {
+        if (activeInput) {
+            activeInput.value = '';
+        }
+
+        closeCropModal();
+    });
+
+    cropApply.addEventListener('click', async () => {
+        if (!activeInput) {
+            closeCropModal();
+            return;
+        }
+
+        const output = document.createElement('canvas');
+        output.width = 1600;
+        output.height = 1600;
+        output.getContext('2d').drawImage(cropCanvas, 0, 0, output.width, output.height);
+        const blob = await canvasToBlob(output, 0.86);
+
+        if (!blob) {
+            closeCropModal();
+            return;
+        }
+
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(new File([blob], activeFileName, {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+        }));
+
+        activeInput.dataset.cropApplied = 'true';
+        activeInput.dataset.cropPending = 'false';
+        activeInput.files = dataTransfer.files;
+        activeInput.dispatchEvent(new Event('change'));
+        closeCropModal();
+    });
+
+    window.addEventListener('resize', drawCrop);
+}
+
 document.querySelectorAll('input[type="file"][data-max-upload-bytes]').forEach((input) => {
     const maxBytes = Number(input.dataset.maxUploadBytes);
     const maxMegabytes = (maxBytes / 1024 / 1024).toFixed(1);
@@ -160,6 +342,10 @@ document.querySelectorAll('input[type="file"][data-max-upload-bytes]').forEach((
         const file = input.files?.[0];
 
         input.setCustomValidity('');
+
+        if (input.dataset.cropPending === 'true') {
+            return;
+        }
 
         if (!file || !maxBytes || file.size <= maxBytes) {
             input.dataset.compressingUpload = 'false';
@@ -207,20 +393,40 @@ document.querySelectorAll('input[type="file"][data-max-upload-bytes]').forEach((
     });
 });
 
+document.querySelectorAll('img').forEach((image) => {
+    image.addEventListener('error', () => {
+        if (image.dataset.fallbackApplied === 'true') {
+            return;
+        }
+
+        image.dataset.fallbackApplied = 'true';
+        image.classList.add('is-image-error');
+        image.src = image.dataset.fallbackImage || '/images/portfolio/beni-profile-camera.jpeg';
+    });
+});
+
 const backgroundAudio = document.querySelector('[data-background-audio]');
 const audioToggle = document.querySelector('[data-audio-toggle]');
+const audioMenuToggle = document.querySelector('[data-audio-menu-toggle]');
+const audioMenu = document.querySelector('[data-audio-menu]');
+const audioToggleLabel = document.querySelector('[data-audio-menu-label]');
 const focusVideos = Array.from(document.querySelectorAll('[data-focus-video]'));
 
 if (backgroundAudio && audioToggle) {
-    let audioWanted = true;
+    let audioWanted = false;
     let pausedByVideo = false;
 
     const updateAudioButton = () => {
         const isPlaying = !backgroundAudio.paused;
+        const label = isPlaying ? 'Jeda lagu' : 'Nyalakan lagu';
 
-        audioToggle.textContent = isPlaying ? 'Jeda lagu' : 'Nyalakan lagu';
+        if (audioToggleLabel) {
+            audioToggleLabel.textContent = label;
+        }
+
+        audioToggle.setAttribute('aria-label', label);
         audioToggle.setAttribute('aria-pressed', String(isPlaying));
-        audioToggle.classList.toggle('is-playing', isPlaying);
+        audioMenuToggle?.classList.toggle('is-playing', isPlaying);
     };
 
     const playBackgroundAudio = async () => {
@@ -240,6 +446,12 @@ if (backgroundAudio && audioToggle) {
         }
     };
 
+    joyGateOpen?.addEventListener('click', () => {
+        audioWanted = true;
+        pausedByVideo = false;
+        playBackgroundAudio();
+    });
+
     const pauseBackgroundAudio = () => {
         backgroundAudio.pause();
         updateAudioButton();
@@ -255,6 +467,28 @@ if (backgroundAudio && audioToggle) {
         }
 
         pauseBackgroundAudio();
+    });
+
+    audioMenuToggle?.addEventListener('click', () => {
+        const willOpen = audioMenu?.hasAttribute('hidden') ?? false;
+
+        audioMenu?.toggleAttribute('hidden', !willOpen);
+        audioMenuToggle.setAttribute('aria-expanded', String(willOpen));
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!audioMenu || !audioMenuToggle || audioMenu.hasAttribute('hidden')) {
+            return;
+        }
+
+        const target = event.target;
+
+        if (target instanceof Node && (audioMenu.contains(target) || audioMenuToggle.contains(target))) {
+            return;
+        }
+
+        audioMenu.setAttribute('hidden', '');
+        audioMenuToggle.setAttribute('aria-expanded', 'false');
     });
 
     focusVideos.forEach((video) => {
@@ -311,6 +545,58 @@ if (backgroundAudio && audioToggle) {
     } else {
         window.addEventListener('load', startAudioAfterLoad, { once: true });
     }
+
+    updateAudioButton();
+}
+
+document.querySelectorAll('[data-custom-video-player]').forEach((player) => {
+    const video = player.querySelector('video');
+    const playButton = player.querySelector('[data-video-play]');
+    const muteButton = player.querySelector('[data-video-mute]');
+
+    if (!video || !playButton || !muteButton) {
+        return;
+    }
+
+    const updateVideoControls = () => {
+        playButton.textContent = video.paused ? 'Play' : 'Pause';
+        playButton.setAttribute('aria-label', video.paused ? 'Putar video' : 'Jeda video');
+        muteButton.textContent = video.muted ? 'Muted' : 'Sound';
+        muteButton.setAttribute('aria-label', video.muted ? 'Nyalakan suara' : 'Matikan suara');
+    };
+
+    playButton.addEventListener('click', async () => {
+        if (video.paused) {
+            await video.play().catch(() => {});
+        } else {
+            video.pause();
+        }
+
+        updateVideoControls();
+    });
+
+    muteButton.addEventListener('click', () => {
+        video.muted = !video.muted;
+        updateVideoControls();
+    });
+
+    ['play', 'pause', 'ended', 'volumechange'].forEach((eventName) => {
+        video.addEventListener(eventName, updateVideoControls);
+    });
+
+    updateVideoControls();
+});
+
+if (joyGate && joyGateOpen) {
+    joyGateOpen.addEventListener('click', () => {
+        joyGate.classList.add('is-opening');
+
+        window.setTimeout(() => {
+            joyGate.classList.add('is-hidden');
+            joyGate.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }, 1900);
+    }, { once: true });
 }
 
 document.querySelectorAll('[data-rating-picker]').forEach((picker) => {
@@ -415,7 +701,7 @@ const servicePrices = {
         packages: [
             {
                 name: 'Silver Package',
-                price: 'Rate via WhatsApp',
+                price: '500 rb',
                 details: [
                     'Durasi 1/2 hari',
                     'Unlimited shoot',
@@ -463,6 +749,7 @@ const servicePrices = {
                     'Free gift/aksesoris',
                     'Premium album',
                     'Free SD card/flashdisk',
+                    'Website fotografy pribadi',
                 ],
             },
         ],
@@ -530,7 +817,7 @@ const servicePrices = {
         packages: [
             {
                 name: 'Event Custom',
-                price: 'Direct WhatsApp',
+                price: 'negotiable',
                 details: [
                     'Wisuda, ulang tahun, corporate, dan acara khusus',
                     'Durasi dan kebutuhan output menyesuaikan rundown',
@@ -542,7 +829,7 @@ const servicePrices = {
 };
 
 const createWaLink = (serviceName) => {
-    const message = `Halo R&D Photography, saya mau tanya pricelist untuk ${serviceName}.`;
+    const message = `Halo RD Potrait, saya mau tanya pricelist untuk ${serviceName}.`;
     return `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
 };
 
@@ -603,6 +890,30 @@ if (priceModal && priceOpeners.length > 0) {
         }
     });
 }
+
+document.querySelectorAll('[data-profile-carousel]').forEach((carousel) => {
+    const track = carousel.querySelector('[data-profile-track]');
+    const previousButton = carousel.querySelector('[data-profile-prev]');
+    const nextButton = carousel.querySelector('[data-profile-next]');
+
+    if (!track || !previousButton || !nextButton) {
+        return;
+    }
+
+    const scrollProfile = (direction) => {
+        const firstCard = track.querySelector('.portfolio-character');
+        const gap = Number.parseFloat(window.getComputedStyle(track).columnGap || '0');
+        const distance = firstCard ? firstCard.getBoundingClientRect().width + gap : track.clientWidth * 0.82;
+
+        track.scrollBy({
+            left: direction * distance,
+            behavior: 'smooth',
+        });
+    };
+
+    previousButton.addEventListener('click', () => scrollProfile(-1));
+    nextButton.addEventListener('click', () => scrollProfile(1));
+});
 
 const revealItems = document.querySelectorAll('.reveal');
 

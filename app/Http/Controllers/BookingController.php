@@ -20,13 +20,27 @@ class BookingController extends Controller
             'message' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        if (filled($data['event_date'] ?? null)) {
+            $isBooked = Booking::query()
+                ->whereDate('event_date', $data['event_date'])
+                ->where('status', 'booked')
+                ->exists();
+
+            if ($isBooked) {
+                return back()
+                    ->withErrors(['event_date' => 'Tanggal ini sudah berstatus booked. Silakan pilih tanggal lain atau konsultasi via WhatsApp.'])
+                    ->withInput();
+            }
+        }
+
+        $data['status'] = 'pending';
         Booking::create($data);
         $eventDate = filled($data['event_date'] ?? null)
             ? Carbon::parse($data['event_date'])->locale('id')->translatedFormat('d F Y')
             : '-';
 
         $lines = [
-            'Halo R&D Photography, saya ingin booking.',
+            'Halo RD Potrait, saya ingin booking.',
             'Nama: '.$data['name'],
             'No HP: '.$data['phone'],
             'Layanan: '.$data['service'],

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard Admin - R&D Photography</title>
+    <title>Dashboard Admin - RD Potrait</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -13,11 +13,11 @@
     <header class="border-b border-white/10 bg-[#151515]">
         <div class="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-5 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10">
             <div>
-                <a href="{{ url('/') }}" class="brand-mark" aria-label="R&D Photography">
-                    <img src="{{ asset('images/rd-potrait-logo.png') }}" alt="R&D Photography">
-                    <span>R&D Photography</span>
+                <a href="{{ url('/') }}" class="brand-mark" aria-label="RD Potrait">
+                    <img src="{{ asset('images/rd-potrait-logo.png') }}" alt="RD Potrait">
+                    <span>RD Potrait</span>
                 </a>
-                <p class="mt-1 text-sm text-[#bdb4b0]">Dashboard foto welcome dan portfolio halaman depan</p>
+                <p class="mt-1 text-sm text-[#bdb4b0]">Dashboard foto welcome, portfolio, audio, dan jadwal booked</p>
             </div>
             <div class="flex flex-wrap gap-3">
                 <a class="border border-white/15 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/10" href="{{ url('/') }}" target="_blank">Lihat Website</a>
@@ -46,6 +46,80 @@
                 </ul>
             </div>
         @endif
+
+        <section class="mb-10 border border-white/10 bg-[#151515] p-6">
+            <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="eyebrow">Website</p>
+                    <h1 class="font-display text-3xl font-bold">Backsound dan Sosial Media</h1>
+                    <p class="mt-2 max-w-2xl text-sm leading-6 text-[#bdb4b0]">Upload lagu baru dan atur link Instagram/TikTok yang muncul di tombol audio website.</p>
+                </div>
+            </div>
+
+            <form class="grid gap-4 border border-white/10 bg-[#191919] p-5 md:grid-cols-3" method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <div>
+                    <label class="admin-label" for="backsound">Ganti Backsound</label>
+                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="backsound" name="backsound" type="file" accept="audio/*">
+                    <p class="mt-2 text-xs font-semibold text-[#bdb4b0]">File saat ini: {{ basename($settings->backsound_path ?? 'audio default') }}</p>
+                </div>
+                <div>
+                    <label class="admin-label" for="instagram_url">Instagram</label>
+                    <input class="admin-input" id="instagram_url" name="instagram_url" type="url" value="{{ old('instagram_url', $settings->instagram_url) }}">
+                </div>
+                <div>
+                    <label class="admin-label" for="tiktok_url">TikTok</label>
+                    <input class="admin-input" id="tiktok_url" name="tiktok_url" type="url" value="{{ old('tiktok_url', $settings->tiktok_url) }}">
+                </div>
+                <button class="bg-[#ffb3b1] px-6 py-4 font-bold text-[#3b0509] transition hover:bg-[#ffd6d3] md:col-span-3" type="submit">Simpan Pengaturan</button>
+            </form>
+        </section>
+
+        <section class="mb-10 border border-white/10 bg-[#151515] p-6">
+            <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="eyebrow">Kalender Admin</p>
+                    <h1 class="font-display text-3xl font-bold">Label Tanggal Booked</h1>
+                    <p class="mt-2 max-w-2xl text-sm leading-6 text-[#bdb4b0]">Tandai jadwal sebagai booked agar tanggal yang sama tidak bentrok dari form booking publik.</p>
+                </div>
+                <p class="text-sm font-semibold text-[#bdb4b0]">{{ $bookings->count() }} jadwal</p>
+            </div>
+
+            <div class="booking-calendar-grid">
+                @forelse ($bookings as $booking)
+                    <article class="booking-calendar-card" style="--booking-color: {{ $booking->color ?: '#ffb3b1' }}">
+                        <div>
+                            <p class="booking-calendar-date">{{ $booking->event_date?->format('d M Y') }}</p>
+                            <h2>{{ $booking->label ?: $booking->service }}</h2>
+                            <p>{{ $booking->name }} - {{ $booking->phone }}</p>
+                            <p>{{ $booking->location ?: 'Lokasi belum diisi' }}</p>
+                        </div>
+                        <form class="mt-5 grid gap-3" method="POST" action="{{ route('admin.bookings.update', $booking) }}">
+                            @csrf
+                            @method('PUT')
+                            <input class="admin-input" name="label" type="text" value="{{ old('label', $booking->label) }}" placeholder="Label, contoh: Wedding Dina">
+                            <select class="admin-input" name="status" required>
+                                @foreach (['pending' => 'Pending', 'booked' => 'Booked', 'done' => 'Selesai', 'cancelled' => 'Batal'] as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('status', $booking->status) === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <input class="admin-input" name="color" type="color" value="{{ old('color', $booking->color ?: '#ffb3b1') }}">
+                            <button class="border border-[#ffb3b1] px-4 py-3 font-bold text-[#ffb3b1] transition hover:bg-[#ffb3b1] hover:text-[#3b0509]" type="submit">Update Jadwal</button>
+                        </form>
+                        <form class="mt-3" method="POST" action="{{ route('admin.bookings.destroy', $booking) }}" onsubmit="return confirm('Hapus jadwal ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button class="w-full border border-white/15 px-4 py-3 font-bold text-white transition hover:bg-white/10" type="submit">Hapus Jadwal</button>
+                        </form>
+                    </article>
+                @empty
+                    <div class="border border-white/10 bg-[#191919] p-8 text-[#c9c1bd]">
+                        Belum ada booking bertanggal.
+                    </div>
+                @endforelse
+            </div>
+        </section>
 
         <section class="mb-10 border border-white/10 bg-[#151515] p-6">
             <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -103,7 +177,7 @@
                 </div>
                 <div>
                     <label class="admin-label" for="hero-image">Foto Slide</label>
-                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="hero-image" name="image" type="file" accept="image/*" data-max-upload-bytes="3670016" required>
+                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="hero-image" name="image" type="file" accept="image/*" data-max-upload-bytes="3670016" data-crop-upload required>
                 </div>
                 <div>
                     <label class="admin-label" for="hero-sort">Urutan</label>
@@ -130,7 +204,7 @@
                             <div class="grid gap-4 sm:grid-cols-[1fr_110px]">
                                 <div>
                                     <label class="admin-label" for="hero-image-{{ $photo->id }}">Ganti Foto</label>
-                                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-3 file:py-2 file:font-bold file:text-[#3b0509]" id="hero-image-{{ $photo->id }}" name="image" type="file" accept="image/*" data-max-upload-bytes="3670016">
+                                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-3 file:py-2 file:font-bold file:text-[#3b0509]" id="hero-image-{{ $photo->id }}" name="image" type="file" accept="image/*" data-max-upload-bytes="3670016" data-crop-upload>
                                 </div>
                                 <div>
                                     <label class="admin-label" for="hero-sort-{{ $photo->id }}">Urutan</label>
@@ -237,7 +311,7 @@
                 </div>
                 <div>
                     <label class="admin-label" for="profile-image">Foto</label>
-                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="profile-image" name="image" type="file" accept="image/*" data-max-upload-bytes="3670016" required>
+                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="profile-image" name="image" type="file" accept="image/*" data-max-upload-bytes="3670016" data-crop-upload required>
                 </div>
                 <div class="lg:col-span-4">
                     <label class="admin-label" for="profile-description">Deskripsi</label>
@@ -272,7 +346,7 @@
                             <div class="grid gap-4 sm:grid-cols-[1fr_120px]">
                                 <div>
                                     <label class="admin-label" for="profile-image-{{ $profile->id }}">Ganti Foto</label>
-                                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-3 file:py-2 file:font-bold file:text-[#3b0509]" id="profile-image-{{ $profile->id }}" name="image" type="file" accept="image/*" data-max-upload-bytes="3670016">
+                                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-3 file:py-2 file:font-bold file:text-[#3b0509]" id="profile-image-{{ $profile->id }}" name="image" type="file" accept="image/*" data-max-upload-bytes="3670016" data-crop-upload>
                                 </div>
                                 <div>
                                     <label class="admin-label" for="profile-sort-{{ $profile->id }}">Urutan</label>
@@ -317,8 +391,13 @@
                     </div>
                     <div>
                         <label class="admin-label" for="image">Foto / Video</label>
-                        <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="image" name="image" type="file" accept="image/*,video/mp4,video/quicktime,video/webm,video/x-msvideo" data-max-upload-bytes="3670016" required>
+                        <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="image" name="image" type="file" accept="image/*,video/mp4,video/quicktime,video/webm,video/x-msvideo" data-max-upload-bytes="3670016" data-crop-upload required>
                         <p class="mt-2 text-xs font-semibold text-[#bdb4b0]">Foto otomatis dikompres sebelum upload. Video besar perlu dipasang sebagai file static.</p>
+                    </div>
+                    <div>
+                        <label class="admin-label" for="poster">Thumbnail Video</label>
+                        <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-4 file:py-2 file:font-bold file:text-[#3b0509]" id="poster" name="poster" type="file" accept="image/*" data-max-upload-bytes="3670016" data-crop-upload>
+                        <p class="mt-2 text-xs font-semibold text-[#bdb4b0]">Dipakai sebagai cover kalau media yang diupload adalah video.</p>
                     </div>
                     <div>
                         <label class="admin-label" for="sort_order">Urutan</label>
@@ -327,6 +406,10 @@
                     <label class="flex items-center gap-3 text-sm font-semibold text-[#d9d3cf]">
                         <input class="h-4 w-4 accent-[#ffb3b1]" type="checkbox" name="is_visible" value="1" checked>
                         Tampilkan di halaman depan
+                    </label>
+                    <label class="flex items-center gap-3 text-sm font-semibold text-[#d9d3cf]">
+                        <input class="h-4 w-4 accent-[#ffb3b1]" type="checkbox" name="show_in_hero" value="1" @checked(old('show_in_hero'))>
+                        Masukkan foto ini ke hero slider
                     </label>
                     <button class="w-full bg-[#ffb3b1] px-6 py-4 font-bold text-[#3b0509] transition hover:bg-[#ffd6d3]" type="submit">Simpan Media</button>
                 </div>
@@ -345,7 +428,7 @@
                     @forelse ($photos as $photo)
                         <article class="border border-white/10 bg-[#191919]">
                             @if ($photo->media_type === 'video')
-                                <video class="h-64 w-full object-cover" src="{{ $photo->image_url }}" controls preload="metadata"></video>
+                                <video class="h-64 w-full object-cover" src="{{ $photo->image_url }}" poster="{{ $photo->poster_url }}" controls preload="metadata"></video>
                             @else
                                 <img class="h-64 w-full object-cover" src="{{ $photo->image_url }}" alt="{{ $photo->title }}">
                             @endif
@@ -366,17 +449,28 @@
                                 <div class="grid gap-4 sm:grid-cols-[1fr_120px]">
                                     <div>
                                         <label class="admin-label" for="image-{{ $photo->id }}">Ganti Foto / Video</label>
-                                        <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-3 file:py-2 file:font-bold file:text-[#3b0509]" id="image-{{ $photo->id }}" name="image" type="file" accept="image/*,video/mp4,video/quicktime,video/webm,video/x-msvideo" data-max-upload-bytes="3670016">
+                                        <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-3 file:py-2 file:font-bold file:text-[#3b0509]" id="image-{{ $photo->id }}" name="image" type="file" accept="image/*,video/mp4,video/quicktime,video/webm,video/x-msvideo" data-max-upload-bytes="3670016" data-crop-upload>
                                     </div>
                                     <div>
                                         <label class="admin-label" for="sort-{{ $photo->id }}">Urutan</label>
                                         <input class="admin-input" id="sort-{{ $photo->id }}" name="sort_order" type="number" min="0" value="{{ old('sort_order', $photo->sort_order) }}">
                                     </div>
                                 </div>
+                                <div>
+                                    <label class="admin-label" for="poster-{{ $photo->id }}">Ganti Thumbnail Video</label>
+                                    <input class="admin-input file:border-0 file:bg-[#ffb3b1] file:px-3 file:py-2 file:font-bold file:text-[#3b0509]" id="poster-{{ $photo->id }}" name="poster" type="file" accept="image/*" data-max-upload-bytes="3670016" data-crop-upload>
+                                    <p class="mt-2 text-xs font-semibold text-[#bdb4b0]">Thumbnail hanya dipakai kalau media ini video.</p>
+                                </div>
                                 <label class="flex items-center gap-3 text-sm font-semibold text-[#d9d3cf]">
                                     <input class="h-4 w-4 accent-[#ffb3b1]" type="checkbox" name="is_visible" value="1" @checked($photo->is_visible)>
                                     Tampilkan
                                 </label>
+                                @if ($photo->media_type === 'image')
+                                    <label class="flex items-center gap-3 text-sm font-semibold text-[#d9d3cf]">
+                                        <input class="h-4 w-4 accent-[#ffb3b1]" type="checkbox" name="show_in_hero" value="1" @checked($photo->show_in_hero)>
+                                        Masukkan ke hero slider
+                                    </label>
+                                @endif
                                 <div class="flex flex-col gap-3 sm:flex-row">
                                     <button class="flex-1 border border-[#ffb3b1] px-4 py-3 font-bold text-[#ffb3b1] transition hover:bg-[#ffb3b1] hover:text-[#3b0509]" type="submit">Update</button>
                                 </div>
@@ -401,6 +495,28 @@
                 <option value="{{ $category }}"></option>
             @endforeach
         </datalist>
+
+        <div class="crop-modal hidden" data-crop-modal aria-hidden="true">
+            <div class="crop-modal-panel">
+                <div>
+                    <p class="eyebrow">Crop Foto</p>
+                    <h2 class="font-display text-3xl font-bold">Geser dan Crop Sebelum Upload</h2>
+                </div>
+                <div class="crop-stage" data-crop-stage>
+                    <canvas data-crop-canvas></canvas>
+                    <div class="crop-frame" aria-hidden="true"></div>
+                </div>
+                <div class="crop-controls">
+                    <button type="button" data-crop-zoom-out>-</button>
+                    <input type="range" min="1" max="3" step="0.05" value="1" data-crop-zoom aria-label="Zoom crop">
+                    <button type="button" data-crop-zoom-in>+</button>
+                </div>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <button class="border border-white/15 px-4 py-3 font-bold text-white transition hover:bg-white/10" type="button" data-crop-cancel>Batal</button>
+                    <button class="bg-[#ffb3b1] px-4 py-3 font-bold text-[#3b0509] transition hover:bg-[#ffd6d3]" type="button" data-crop-apply>Pakai Foto Ini</button>
+                </div>
+            </div>
+        </div>
     </main>
 </body>
 </html>

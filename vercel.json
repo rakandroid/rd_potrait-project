@@ -46,6 +46,10 @@
       "dest": "/audio/$1"
     },
     {
+      "src": "/uploads/(.*)",
+      "dest": "/uploads/$1"
+    },
+    {
       "src": "/favicon.ico",
       "dest": "/favicon.ico"
     },
@@ -56,6 +60,10 @@
     {
       "src": "/sitemap.xml",
       "dest": "/sitemap.xml"
+    },
+    {
+      "src": "/googleafd1977145e13351.html",
+      "dest": "/googleafd1977145e13351.html"
     },
     {
       "src": "/(.*)",

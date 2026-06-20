@@ -3,16 +3,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="R&D Photography adalah jasa fotografi dan videografi untuk wedding, pre-wedding, event, cinematic video, dan portrait. Booking R&D Potrait langsung via WhatsApp.">
+    <meta name="description" content="RD Potrait adalah jasa fotografi dan videografi untuk wedding, pre-wedding, event, cinematic video, dan portrait. Booking RD Potrait langsung via WhatsApp.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="{{ url('/') }}">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="R&D Photography - Wedding, Event, Portrait">
+    <meta property="og:title" content="RD Potrait - Wedding, Event, Portrait">
     <meta property="og:description" content="Jasa fotografi dan videografi untuk wedding, pre-wedding, event, cinematic video, dan portrait.">
     <meta property="og:url" content="{{ url('/') }}">
     <meta property="og:image" content="{{ asset('images/rd-potrait-logo.png') }}">
     <meta name="twitter:card" content="summary_large_image">
-    <title>R&D Photography - Wedding, Event, Portrait</title>
+    <title>RD Potrait - Wedding, Event, Portrait</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -20,19 +20,40 @@
         {
             "@@context": "https://schema.org",
             "@@type": "LocalBusiness",
-            "name": "R&D Photography",
+            "name": "RD Potrait",
             "url": "{{ url('/') }}",
             "image": "{{ asset('images/rd-potrait-logo.png') }}",
             "description": "Jasa fotografi dan videografi untuk wedding, pre-wedding, event, cinematic video, dan portrait.",
             "sameAs": [
-                "https://www.instagram.com/rd_potrait?igsh=MXA4NDV0emJjN2Nsag==",
-                "https://www.tiktok.com/@r.benidarmansyah?lang=en"
+                "{{ $settings->instagram_url }}",
+                "{{ $settings->tiktok_url }}"
             ]
         }
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="overflow-x-hidden bg-[#111111] text-[#f3f0ed] antialiased" data-open-admin-modal="{{ ($errors->has('email') || $errors->has('password')) ? 'true' : 'false' }}">
+    <div class="joy-gate" data-joy-gate role="dialog" aria-modal="true" aria-labelledby="joy-gate-title">
+        <div class="joy-gate-sky" aria-hidden="true">
+            <span class="joy-flower joy-flower-a"></span>
+            <span class="joy-flower joy-flower-b"></span>
+            <span class="joy-flower joy-flower-c"></span>
+            @foreach (range(1, 24) as $petal)
+                <span class="joy-petal" style="--i: {{ $petal }}; --drift: {{ (($petal % 5) - 2) * 7 }}vw; --drift-soft: {{ (($petal % 5) - 2) * -2.45 }}vw; --delay: {{ ($petal % 6) * 80 }}ms; --idle-delay: -{{ $petal * 0.42 }}s;"></span>
+            @endforeach
+            @foreach (range(1, 10) as $butterfly)
+                <span class="joy-butterfly" style="--i: {{ $butterfly }}; --rise: {{ (($butterfly % 3) - 1) * 16 }}vh; --top: {{ 18 + (($butterfly % 4) * 14) }}%; --delay: {{ ($butterfly % 4) * 120 }}ms; --idle-delay: -{{ $butterfly * 0.7 }}s;"></span>
+            @endforeach
+        </div>
+        <section class="joy-gate-card">
+            <img src="{{ asset('images/rd-potrait-logo.png') }}" alt="RD Potrait">
+            <h2 id="joy-gate-title">Apakah anda siap berbahagia bersama kami?</h2>
+            <button class="joy-gate-button" type="button" data-joy-gate-open>
+                Saya siap
+            </button>
+        </section>
+    </div>
+
     <div class="portrait-scene" aria-hidden="true">
         <div class="portrait-scene-gradient"></div>
         <div class="portrait-scene-grid"></div>
@@ -44,13 +65,14 @@
 
     <header class="site-header fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#111111]/80 backdrop-blur-xl" data-site-header>
         <nav class="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-10" aria-label="Navigasi utama">
-            <a href="#home" class="brand-mark brand-mark--header" aria-label="R&D Photography">
-                <img src="{{ asset('images/rd-potrait-logo-header.png') }}" alt="R&D Photography">
+            <a href="#home" class="brand-mark brand-mark--header" aria-label="RD Potrait">
+                <img src="{{ asset('images/rd-potrait-logo-header.png') }}" alt="RD Potrait">
             </a>
 
             <div class="hidden items-center gap-8 text-sm font-semibold text-[#d9d3cf] lg:flex">
                 <a class="nav-link" href="#layanan">Layanan</a>
                 <a class="nav-link" href="#portfolio">Portfolio</a>
+                <a class="nav-link" href="{{ route('profile') }}">Profile</a>
                 <a class="nav-link" href="#proses">Proses</a>
                 <a class="nav-link" href="#testimoni">Testimoni</a>
                 <a class="nav-link" href="{{ route('admin.login') }}" data-admin-modal-open>Admin</a>
@@ -70,6 +92,7 @@
             <div class="flex flex-col gap-4 text-sm font-semibold text-[#d9d3cf]">
                 <a href="#layanan">Layanan</a>
                 <a href="#portfolio">Portfolio</a>
+                <a href="{{ route('profile') }}">Profile</a>
                 <a href="#proses">Proses</a>
                 <a href="#testimoni">Testimoni</a>
                 <a href="{{ route('admin.login') }}" data-admin-modal-open>Admin</a>
@@ -104,7 +127,7 @@
                     <div class="hero-burst"></div>
                     <div class="hero-screen">
                         <div class="hero-screen-topline">
-                            <span>R&D</span>
+                            <span>RD Potrait</span>
                             <span>PORTRAIT 2026</span>
                         </div>
                         <div class="hero-photo-sequence" style="--hero-slide-duration: {{ max($heroPhotos->count(), 3) * 4 }}s;">
@@ -173,7 +196,7 @@
         <section id="portfolio" class="scene-section section-wrap pt-0">
             <div class="section-heading reveal">
                 <p class="eyebrow">Portfolio</p>
-                <h2>Galeri R&D Potrait</h2>
+                <h2>Galeri RD Potrait</h2>
             </div>
 
             @php
@@ -207,14 +230,20 @@
                 </div>
             @endif
 
-            <div class="portfolio-video-feature mb-8 grid gap-5 {{ $portfolioVideos->isNotEmpty() ? 'lg:grid-cols-[1.35fr_0.65fr]' : 'lg:grid-cols-1' }}">
-                @if ($portfolioVideos->isNotEmpty())
-                    <div class="portfolio-video-list {{ $portfolioVideos->count() === 1 ? 'portfolio-video-list--single' : '' }} grid gap-5 {{ $portfolioVideos->count() > 1 ? 'md:grid-cols-2 lg:grid-cols-1' : '' }}">
+            @if ($portfolioVideos->isNotEmpty())
+                <div class="portfolio-video-feature mb-8">
+                    <div class="portfolio-video-list {{ $portfolioVideos->count() === 1 ? 'portfolio-video-list--single' : '' }} grid gap-5 {{ $portfolioVideos->count() > 1 ? 'md:grid-cols-2' : '' }}">
                         @foreach ($portfolioVideos as $video)
                             <figure class="portfolio-video reveal">
-                                <video controls preload="none" playsinline poster="{{ $videoPoster }}" data-focus-video>
-                                    <source src="{{ $video->image_url }}" type="{{ $videoMimeType($video->image_url) }}">
-                                </video>
+                                <div class="custom-video-player" data-custom-video-player>
+                                    <video preload="none" playsinline poster="{{ $video->poster_url ?? $videoPoster }}" data-focus-video>
+                                        <source src="{{ $video->image_url }}" type="{{ $videoMimeType($video->image_url) }}">
+                                    </video>
+                                    <div class="custom-video-controls">
+                                        <button type="button" data-video-play aria-label="Putar video">Play</button>
+                                        <button type="button" data-video-mute aria-label="Matikan suara">Sound</button>
+                                    </div>
+                                </div>
                                 <figcaption>
                                     <span>{{ $video->title }}</span>
                                     <small>{{ $video->category }}</small>
@@ -222,29 +251,8 @@
                             </figure>
                         @endforeach
                     </div>
-                @endif
-
-                    <div class="portfolio-character-list grid gap-5">
-                        @foreach ($profiles as $profile)
-                            <aside class="portfolio-character reveal {{ $portfolioVideos->isEmpty() ? 'portfolio-character--standalone' : '' }}" aria-label="Profil {{ $profile->title }}">
-                                <div class="portfolio-character-visual" aria-hidden="true">
-                                    @if ($profile->image_url)
-                                        <div class="portfolio-character-slider">
-                                            <img src="{{ $profile->image_url }}" alt="" loading="lazy" decoding="async">
-                                        </div>
-                                    @else
-                                        <span>{{ collect(explode(' ', $profile->title))->map(fn ($word) => mb_substr($word, 0, 1))->take(2)->join('') }}</span>
-                                    @endif
-                                </div>
-                                <div class="portfolio-character-copy">
-                                    <p class="eyebrow">{{ $profile->category ?: 'Profile' }}</p>
-                                    <h4>{{ $profile->title }}</h4>
-                                    <p>{{ $profile->description }}</p>
-                                </div>
-                            </aside>
-                        @endforeach
-                    </div>
-            </div>
+                </div>
+            @endif
 
             <div class="portfolio-grid grid auto-rows-[280px] gap-5 md:grid-cols-4">
                 @forelse ($portfolioPhotos as $photo)
@@ -319,7 +327,7 @@
 
                 <form class="testimonial-form form-panel reveal p-7" method="POST" action="{{ route('testimonials.store') }}">
                     @csrf
-                    <p class="mb-3 text-sm font-bold uppercase text-[#ffb3b1]">Rate R&D Potrait</p>
+                    <p class="mb-3 text-sm font-bold uppercase text-[#ffb3b1]">Rate RD Potrait</p>
                     <h3 class="font-display text-3xl font-bold text-white">Bagikan pengalaman kamu.</h3>
 
                     @if (session('testimonial_success'))
@@ -428,13 +436,13 @@
                 <button class="absolute right-4 top-4 flex h-10 w-10 items-center justify-center border border-white/15 text-xl leading-none text-white transition hover:bg-white/10" type="button" data-admin-modal-close aria-label="Tutup login admin">
                     &times;
                 </button>
-            <a href="{{ url('/') }}" class="brand-mark" aria-label="R&D Photography">
-                <img src="{{ asset('images/rd-potrait-logo.png') }}" alt="R&D Photography">
+            <a href="{{ url('/') }}" class="brand-mark" aria-label="RD Potrait">
+                <img src="{{ asset('images/rd-potrait-logo.png') }}" alt="RD Potrait">
             </a>
             <div class="mt-10">
                 <p class="eyebrow">Admin Area</p>
                 <h2 class="font-display text-4xl font-bold">Login Admin</h2>
-                <p class="mt-4 leading-7 text-[#c9c1bd]">Halo R&D potrait selamat datang kembali</p>
+                <p class="mt-4 leading-7 text-[#c9c1bd]">Halo RD Potrait, selamat datang kembali</p>
             </div>
 
             <form class="mt-8 space-y-5" method="POST" action="{{ route('admin.login.store') }}">
@@ -475,22 +483,38 @@
     </div>
 
     <div class="site-audio" data-audio-widget>
-        <audio src="{{ asset('audio/until-i-found-you-violin-cover.mp3') }}" loop preload="none" data-background-audio></audio>
-        <button class="site-audio-toggle" type="button" data-audio-toggle aria-pressed="false">
-            Nyalakan lagu
+        <audio src="{{ $settings->backsound_url }}" loop preload="none" data-background-audio></audio>
+        <button class="site-audio-toggle" type="button" data-audio-menu-toggle aria-expanded="false" aria-label="Buka menu audio">
+            <span class="audio-flower" aria-hidden="true">
+                <span class="audio-flower-petal"></span>
+                <span class="audio-flower-petal"></span>
+                <span class="audio-flower-petal"></span>
+                <span class="audio-flower-petal"></span>
+                <span class="audio-flower-center"></span>
+                <span class="audio-flower-stem"></span>
+                <span class="audio-flower-leaf"></span>
+            </span>
+            <span class="site-audio-label">Menu audio</span>
         </button>
+        <div class="site-audio-menu" data-audio-menu hidden>
+            <button type="button" data-audio-toggle aria-pressed="false">
+                <span data-audio-menu-label>Nyalakan backsound</span>
+            </button>
+            <a href="{{ $settings->instagram_url }}" target="_blank" rel="noopener">Instagram</a>
+            <a href="{{ $settings->tiktok_url }}" target="_blank" rel="noopener">TikTok</a>
+        </div>
     </div>
 
     <footer class="relative z-10 border-t border-white/10 bg-[#0d0d0d] px-5 py-10 sm:px-8 lg:px-10">
         <div class="mx-auto flex max-w-7xl flex-col gap-6 text-sm text-[#bdb4b0] md:flex-row md:items-center md:justify-between">
             <p class="brand-mark text-white">
-                <img src="{{ asset('images/rd-potrait-logo.png') }}" alt="R&D Photography">
-                <span>R&D Photography</span>
+                <img src="{{ asset('images/rd-potrait-logo.png') }}" alt="RD Potrait">
+                <span>RD Potrait</span>
             </p>
-            <p>© {{ date('Y') }} R&D Photography. All rights reserved.</p>
+            <p>© {{ date('Y') }} RD Potrait. All rights reserved.</p>
             <div class="flex gap-5">
-                <a class="hover:text-[#ffb3b1]" href="https://www.instagram.com/rd_potrait?igsh=MXA4NDV0emJjN2Nsag==" target="_blank" rel="noopener">Instagram</a>
-                <a class="hover:text-[#ffb3b1]" href="https://www.tiktok.com/@r.benidarmansyah?lang=en" target="_blank" rel="noopener">TikTok</a>
+                <a class="hover:text-[#ffb3b1]" href="{{ $settings->instagram_url }}" target="_blank" rel="noopener">Instagram</a>
+                <a class="hover:text-[#ffb3b1]" href="{{ $settings->tiktok_url }}" target="_blank" rel="noopener">TikTok</a>
             </div>
         </div>
     </footer>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login Admin - R&D Photography</title>
+    <title>Login Admin - RD Potrait</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -15,8 +15,8 @@
             <a class="absolute right-4 top-4 flex h-10 w-10 items-center justify-center border border-white/15 text-xl leading-none text-white transition hover:bg-white/10" href="{{ url('/') }}" aria-label="Tutup login admin">
                 &times;
             </a>
-            <a href="{{ url('/') }}" class="brand-mark" aria-label="R&D Photography">
-                <img src="{{ asset('images/rd-potrait-logo.png') }}" alt="R&D Photography">
+            <a href="{{ url('/') }}" class="brand-mark" aria-label="RD Potrait">
+                <img src="{{ asset('images/rd-potrait-logo.png') }}" alt="RD Potrait">
             </a>
             <div class="mt-10">
                 <p class="eyebrow">Admin Area</p>

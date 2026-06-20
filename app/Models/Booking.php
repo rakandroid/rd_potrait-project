@@ -11,6 +11,9 @@ class Booking extends Model
         'phone',
         'service',
         'event_date',
+        'label',
+        'status',
+        'color',
         'location',
         'message',
     ];

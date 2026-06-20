@@ -3,6 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Session\TokenMismatchException;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,5 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (TokenMismatchException $exception, Request $request) {
+            return redirect()
+                ->back()
+                ->withInput($request->except('password', 'password_confirmation'))
+                ->withErrors(['session' => 'Sesi halaman sudah kedaluwarsa. Silakan kirim ulang formulir.']);
+        });
     })->create();
